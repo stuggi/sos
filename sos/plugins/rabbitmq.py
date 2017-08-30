@@ -43,5 +43,23 @@ class RabbitMQ(Plugin, RedHatPlugin, DebianPlugin, UbuntuPlugin):
             "/var/log/containers/rabbitmq/*"
         ], sizelimit=self.get_option('log_size'))
 
+    def postproc(self):
+
+        protect_keys = [
+            "default_user",
+            "default_pass"
+        ]
+
+        regexp = r"((?m)^\s*{(%s)\s*,\s*<<\")(.*)(\">>})" % \
+            "|".join(protect_keys)
+        self.do_path_regex_sub(
+            "/etc/rabbitmq/*",
+            regexp, r"\1*********\4"
+        )
+        self.do_path_regex_sub(
+            self.var_puppet_gen + "/etc/rabbitmq/*",
+            regexp, r"\1*********\4"
+        )
+
 
 # vim: set et ts=4 sw=4 :
